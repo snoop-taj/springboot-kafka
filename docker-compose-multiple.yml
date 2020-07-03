@@ -1,0 +1,47 @@
+version: '3.7'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka
+
+  kafka:
+    build:
+      context: kafka
+      dockerfile: Dockerfile
+    ports:
+      - "9092-9094:9092"
+    environment:
+      KAFKA_LISTENERS: LISTENER_1://:9092,LISTENER_2://:9093,LISTENER_3://:9094
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_1://:9092,LISTENER_2://:9093,LISTENER_3://:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_1:PLAINTEXT,LISTENER_2:PLAINTEXT,LISTENER_3:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_MESSAGE_MAX_BYTES: 2000000
+      KAFKA_CREATE_TOPICS: "string-topic-target:3:2,account-topic-target:3:2,client-topic-target:3:2,client-ack-topic-target:3:2"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka
+
+  springboot:
+    build: .
+    volumes:
+      - ./:/code
+      - ${MAVEN_HOME}:/home/maven/.m2
+    environment:
+      MAVEN_CONFIG: /home/maven/.m2
+      BOOTSTRAP_SERVER: ${HOST_MACHINE_IP}:9093
+    depends_on:
+      - kafka
+      - zookeeper
+    networks:
+      - kafka
+
+networks:
+  kafka:
+    driver: bridge

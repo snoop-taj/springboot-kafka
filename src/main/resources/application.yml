@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: Kafka Example
+kafka:
+  config:
+    consumer:
+      string:
+        bootstrap-servers: ${BOOTSTRAP_SERVER:localhost:9092}
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      object:
+        bootstrap-servers: ${BOOTSTRAP_SERVER:localhost:9092}
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        client:
+          retry-interval: 500
+          retry-attempts: 3
+          auto-commit: false
+          max-poll-records: 200
+    producer:
+      string:
+        bootstrap-servers: ${BOOTSTRAP_SERVER:localhost:9092}
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      object:
+        bootstrap-servers: ${BOOTSTRAP_SERVER:localhost:9092}
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+string:
+  topic: string-topic-target
+  group-id: string-group
+object:
+  topics:
+    account: account-topic-target
+    client: client-topic-target
+    client-ack: client-ack-topic-target
+  group-ids:
+    account: account-group
+    client: client-group
+    client-ack: client-ack-group
